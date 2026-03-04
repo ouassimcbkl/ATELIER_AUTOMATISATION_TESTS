@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Test Dashboard</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background: #f4f4f9; color: #333; }
+        h1 { color: #2c3e50; }
+        .run-card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1rem; }
+        .run-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
+        .badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; }
+        .danger { background: #f8d7da; color: #721c24; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; }
+        button { background: #007bff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>API Test Dashboard (Frankfurter)</h1>
+    <button onclick="triggerRun()">Run Tests Now</button>
+    <div id="status" style="margin-top: 10px; font-weight: bold;"></div>
+
+    <h2>Recent Runs</h2>
+    {% for run in runs %}
+    <div class="run-card">
+        <div class="run-header">
+            <strong>Time: {{ run.timestamp }}</strong>
+            <span>
+                <span class="badge {% if run.summary.failed == 0 %}success{% else %}danger{% endif %}">
+                    {{ run.summary.passed }} Pass / {{ run.summary.failed }} Fail
+                </span>
+            </span>
+        </div>
+        <div>
+            Avg Latency: {{ run.summary.latency_ms_avg }} ms | 
+            P95 Latency: {{ run.summary.latency_ms_p95 }} ms | 
+            Error Rate: {{ "%.1f"|format(run.summary.error_rate * 100) }}%
+        </div>
+        <details>
+            <summary>View Details</summary>
+            <table>
+                <tr><th>Test Name</th><th>Status</th><th>Latency (ms)</th><th>Details</th></tr>
+                {% for test in run.tests %}
+                <tr>
+                    <td>{{ test.name }}</td>
+                    <td class="{% if test.status == 'PASS' %}success{% else %}danger{% endif %}">{{ test.status }}</td>
+                    <td>{{ test.latency_ms }}</td>
+                    <td>{{ test.details }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </details>
+    </div>
+    {% else %}
+    <p>No runs recorded yet.</p>
+    {% endfor %}
+
+    <script>
+        function triggerRun() {
+            const btn = document.querySelector('button');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            status.innerText = "Running tests...";
+            status.style.color = "blue";
+            
+            fetch('/run', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                status.innerText = "Run complete! Reloading...";
+                status.style.color = "green";
+                setTimeout(() => location.reload(), 1000);
+            })
+            .catch(err => {
+                status.innerText = "Error running tests.";
+                status.style.color = "red";
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
