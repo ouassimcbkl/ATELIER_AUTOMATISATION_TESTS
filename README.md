@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------------------------
-🎯Atelier “Testing as Code & API Monitoring” --cma
+🎯Atelier “Testing as Code & API Monitoring” --cm
 ------------------------------------------------------------------------------------------------------
 Aujourd’hui, vous allez passer du rôle de développeur au rôle d’ingénieur qualité.  
   
